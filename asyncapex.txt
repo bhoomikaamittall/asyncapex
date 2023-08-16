@@ -1,0 +1,33 @@
+public class AsyncApexTasks {
+    public static void createAccountsAndContacts(List<String> people) {
+        // Create a Future method to create Accounts and Contacts
+        createAccountsAndContactsAsync(people);
+        
+        // Create a Queueable job to handle further processing
+        System.enqueueJob(new ProcessFurtherLogicQueueable());
+    }
+
+    @future
+    public static void createAccountsAndContactsAsync(List<String> people) {
+        List<Account> accountsToInsert = new List<Account>();
+        List<Contact> contactsToInsert = new List<Contact>();
+        
+        for (String person : people) {
+            Account acc = new Account(Name = 'Account for ' + person);
+            accountsToInsert.add(acc);
+            
+            Contact con = new Contact(FirstName = person.split(' ')[0], LastName = person.split(' ')[1], AccountId = acc.Id);
+            contactsToInsert.add(con);
+        }
+        
+        insert accountsToInsert;
+        insert contactsToInsert;
+    }
+
+    public class ProcessFurtherLogicQueueable implements Queueable {
+        public void execute(QueueableContext context) {
+            
+            System.debug('Further processing logic executed.');
+        }
+    }
+}

@@ -1,0 +1,3 @@
+String schedule = '0 0 16 * * ?'; // Schedule to run daily at 4:00 PM
+ConvertLeadsToAccountsScheduled scheduler = new ConvertLeadsToAccountsScheduled();
+System.schedule('ConvertlLeadsToAccountssssJbbbs', schedule, scheduler);
