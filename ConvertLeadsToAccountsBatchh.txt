@@ -1,32 +1,89 @@
-public class AsyncApexTasks {
-    public static void createAccountsAndContacts(List<String> people) {
-        // Create a Future method to create Accounts and Contacts
-        createAccountsAndContactsAsync(people);
-        
-        // Create a Queueable job to handle further processing
-        System.enqueueJob(new ProcessFurtherLogicQueueable());
+
+
+public class ConvertLeadsToAccountsBatchh implements Database.Batchable<SObject>, Database.AllowsCallouts {
+
+    public Database.QueryLocator start(Database.BatchableContext BC) {
+
+        String query = 'SELECT Id FROM Lead';
+
+        return Database.getQueryLocator(query);
+
     }
 
-    @future
-    public static void createAccountsAndContactsAsync(List<String> people) {
-        List<Account> accountsToInsert = new List<Account>();
-        List<Contact> contactsToInsert = new List<Contact>();
-        
-        for (String person : people) {
-            Account acc = new Account(Name = 'Account for ' + person);
-            accountsToInsert.add(acc);
-            
-            Contact con = new Contact(FirstName = person.split(' ')[0], LastName = person.split(' ')[1], AccountId = acc.Id);
-            contactsToInsert.add(con);
+ 
+
+    public void execute(Database.BatchableContext BC, List<SObject> scope) {
+
+        List<Database.LeadConvert> leadConverts = new List<Database.LeadConvert>();
+
+ 
+
+        for (SObject sObj : scope) {
+
+            Lead lead = (Lead)sObj;
+
+            Database.LeadConvert lc = new Database.LeadConvert();
+
+            lc.setLeadId(lead.Id);
+
+            lc.setDoNotCreateOpportunity(true);
+
+            lc.setConvertedStatus('Qualified');
+
+            leadConverts.add(lc);
+
         }
-        
-        insert accountsToInsert;
-        insert contactsToInsert;
+
+ 
+
+        if (!leadConverts.isEmpty()) {
+
+            List<Database.LeadConvertResult> convertResults = Database.convertLead(leadConverts);
+
+            // Handle any post-conversion logic if needed
+
+        }
+
     }
 
-    public class ProcessFurtherLogicQueueable implements Queueable {
-        public void execute(QueueableContext context) {
-            System.debug('Further processing logic executed.');
-        }
+ 
+
+    public void finish(Database.BatchableContext BC) {
+
+        // Send email notification here
+
+        sendEmailNotification();
+
     }
+
+ 
+
+    private void sendEmailNotification() {
+
+        // Code to send email notification
+
+        // Replace placeholders with actual email content and recipient address
+
+        String recipientEmail = 'bhoomikamittal14@gmail.com';
+
+        String subject = 'LEAD CONVERSION DONE!!';
+
+        String body = 'PROCESS COMPLETED SUCCESSFULLY.';
+
+ 
+
+        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+
+        email.setToAddresses(new List<String>{recipientEmail});
+
+        email.setSubject(subject);
+
+        email.setPlainTextBody(body);
+
+ 
+
+        Messaging.sendEmail(new List<Messaging.Email>{email});
+
+    }
+
 }
